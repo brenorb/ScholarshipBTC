@@ -1,15 +1,17 @@
 def find_range(utxos, x):
-	smallest = 21000000
-	result = []
+    """Find the least-change range in a timestamp-ordered sequence of UTXOs."""
+    smallest = float("inf")
+    result = []
 
-	for t in reversed(range(len(utxos))):
-		soma = 0
-		j = 0
-		while (soma < x) and ((t - j) > 0):
-			soma = sum(utxos.amount for utxos in utxos[t-j:t+1])
-			if (soma >= x and (soma - x) < smallest):
-				smallest = soma - x
-				result = [utxos[t].timestamp, utxos[t-j].timestamp]
-			if smallest == 0: return result
-			j += 1
-	return result
+    for end in reversed(range(len(utxos))):
+        total = 0
+        start = end
+        while total < x and start >= 0:
+            total += utxos[start].amount
+            if total >= x and total - x < smallest:
+                smallest = total - x
+                result = sorted((utxos[start].timestamp, utxos[end].timestamp))
+                if smallest == 0:
+                    return result
+            start -= 1
+    return result
